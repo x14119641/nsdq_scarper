@@ -58,7 +58,6 @@ async def scrape_dividends(db, scraper, batch_size=10):
     tickers = await db.fetch("SELECT ticker FROM tickers;")
     for chunk in itertools.batched(tickers, batch_size):
         dividends = await scraper.fetch_multiple_dividends(chunk)
-        print(dividends[0:2])
         clean_records = [(item['ticker'], item['exOrEffDate'], item['paymentType'], item['amount'],
                         item['declarationDate'], item['recordDate'], item['paymentDate'], item['currency'])
                         for sublist in dividends if len(sublist)>0 for item in sublist]
@@ -177,4 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("action", type=str, help="Chose 'dividends, 'metadata, 'bla'")
     parser.add_argument("--batch_size", type=int, default=10, help="Number of tickers per batch")
     args = parser.parse_args()
+    start = time.time()
     asyncio.run(main(args.action, args.batch_size))
+    print(f"Action '{args.action}' finished in {time.time()-start:6f}s")
+    

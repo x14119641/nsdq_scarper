@@ -1,7 +1,6 @@
 import httpx
 import asyncio
 from typing import List
-from models import DividendRecord
 from datetime import datetime
 from decimal import Decimal
 
@@ -82,7 +81,7 @@ class Scarper:
     async def fetch_dividends(self, ticker: str):
         """Scarpe dividends"""
         url = f"{self.BASE_URL}/quote/{ticker}/dividends?assetclass=stocks"
-        print(url)
+        # print(url)
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(10.0, read=20.0),
             headers=self.HEADERS,
@@ -118,135 +117,146 @@ class Scarper:
             return records
     
     async def fetch_metadata(self,ticker: str):
-        url = f"{self.BASE_URL}/quote/{ticker}/summary?assetclass=stocks"
-        async with httpx.AsyncClient(
-            timeout=httpx.Timeout(10.0, read=20.0),
-            headers=self.HEADERS,
-            follow_redirects=True,
-        ) as client:
-            metadata = await self.get_json_from_page(client, url)
-            if not metadata:
-                return []
-            if not metadata.get('data'):
-                print(f'No metadata por ticker {ticker}')
-                return []
-            summary_data = metadata.get('data', {}).get('summaryData', {})
-            if not summary_data:
-                print(f'No summary data por ticker {ticker}')
-                return []
-            record = {
-                'ticker':ticker,
-                'exchange':self.clean_str(summary_data.get('Exchange', {}).get('value', '')),
-                'sector':self.clean_str(summary_data.get('Sector', {}).get('value', '')),
-                'industry':self.clean_str(summary_data.get('Industry', {}).get('value', '')),
-                'oneYrTarget':self.clean_number_str(summary_data.get('OneYrTarget', {}).get('value', '')),
-                'todayHighLow':self.clean_str(summary_data.get('TodayHighLow', {}).get('value', '')),
-                'shareVolume':self.clean_number_str(summary_data.get('ShareVolume', {}).get('value', '')),
-                'averageVolume':self.clean_number_str(summary_data.get('AverageVolume', {}).get('value', '')),
-                'previousClose':self.clean_number_str(summary_data.get('PreviousClose', {}).get('value', '')),
-                'fiftTwoWeekHighLow':self.clean_str(summary_data.get('FiftTwoWeekHighLow', {}).get('value', '')),
-                'marketCap':self.clean_number_str(summary_data.get('MarketCap', {}).get('value', '')),
-                'PERatio':self.clean_number_str(str(summary_data.get('PERatio', {}).get('value', ''))),
-                'forwardPE1Yr':self.clean_number_str(summary_data.get('ForwardPE1Yr', {}).get('value', '')),
-                'earningsPerShare':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
-                'annualizedDividend':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
-                'exDividendDate':self.clean_date(summary_data.get('ExDividendDate', {}).get('value', '')),
-                'dividendPaymentDate':self.clean_date(summary_data.get('DividendPaymentDate', {}).get('value', '')),
-                'yield':self.clean_number_str(summary_data.get('Yield', {}).get('value', '')),
-                'specialDividendDate':self.clean_date(summary_data.get('SpecialDividendDate', {}).get('value', '')),
-                'specialDividendAmount':self.clean_number_str(summary_data.get('SpecialDividendAmount', {}).get('value', '')),
-                'specialDividendPaymentDate':self.clean_date(summary_data.get('SpecialDividendPaymentDate', {}).get('value', '')),
-            }
-            return record
+        try:
+            url = f"{self.BASE_URL}/quote/{ticker}/summary?assetclass=stocks"
+            async with httpx.AsyncClient(
+                timeout=httpx.Timeout(10.0, read=20.0),
+                headers=self.HEADERS,
+                follow_redirects=True,
+            ) as client:
+                metadata = await self.get_json_from_page(client, url)
+                if not metadata:
+                    return []
+                if not metadata.get('data'):
+                    print(f'No metadata por ticker {ticker}')
+                    return []
+                summary_data = metadata.get('data', {}).get('summaryData', {})
+                if not summary_data:
+                    print(f'No summary data por ticker {ticker}')
+                    return []
+                record = {
+                    'ticker':ticker,
+                    'exchange':self.clean_str(summary_data.get('Exchange', {}).get('value', '')),
+                    'sector':self.clean_str(summary_data.get('Sector', {}).get('value', '')),
+                    'industry':self.clean_str(summary_data.get('Industry', {}).get('value', '')),
+                    'oneYrTarget':self.clean_number_str(summary_data.get('OneYrTarget', {}).get('value', '')),
+                    'todayHighLow':self.clean_str(summary_data.get('TodayHighLow', {}).get('value', '')),
+                    'shareVolume':self.clean_number_str(summary_data.get('ShareVolume', {}).get('value', '')),
+                    'averageVolume':self.clean_number_str(summary_data.get('AverageVolume', {}).get('value', '')),
+                    'previousClose':self.clean_number_str(summary_data.get('PreviousClose', {}).get('value', '')),
+                    'fiftTwoWeekHighLow':self.clean_str(summary_data.get('FiftTwoWeekHighLow', {}).get('value', '')),
+                    'marketCap':self.clean_number_str(summary_data.get('MarketCap', {}).get('value', '')),
+                    'PERatio':self.clean_number_str(str(summary_data.get('PERatio', {}).get('value', ''))),
+                    'forwardPE1Yr':self.clean_number_str(summary_data.get('ForwardPE1Yr', {}).get('value', '')),
+                    'earningsPerShare':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
+                    'annualizedDividend':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
+                    'exDividendDate':self.clean_date(summary_data.get('ExDividendDate', {}).get('value', '')),
+                    'dividendPaymentDate':self.clean_date(summary_data.get('DividendPaymentDate', {}).get('value', '')),
+                    'yield':self.clean_number_str(summary_data.get('Yield', {}).get('value', '')),
+                    'specialDividendDate':self.clean_date(summary_data.get('SpecialDividendDate', {}).get('value', '')),
+                    'specialDividendAmount':self.clean_number_str(summary_data.get('SpecialDividendAmount', {}).get('value', '')),
+                    'specialDividendPaymentDate':self.clean_date(summary_data.get('SpecialDividendPaymentDate', {}).get('value', '')),
+                }
+                return record
+        except Exception as e:
+            print(f"<Error> In fetch_metadata: {str(e)}")
+            return []
     
     async def fetch_info(self, ticker:str):
-        url = f"{self.BASE_URL}/quote/{ticker}/info?assetclass=stocks"
-        async with httpx.AsyncClient(
-            timeout=httpx.Timeout(10.0, read=20.0),
-            headers=self.HEADERS,
-            follow_redirects=True,
-        ) as client:
-            info = await self.get_json_from_page(client, url)
-            if not info:
-                return []
-            if not info.get('data'):
-                print(f'No info por ticker {ticker}')
-                return []
-            info = info.get('data')
-            record = {
-                'ticker':ticker,
-                'companyName': self.clean_str(info.get('companyName', '')),
-                'stockType':self.clean_str(info.get('stockType', '')),
-                'exchange':self.clean_str(info.get('exchange', '')),
-                'assetClass': info.get('assetClass', ''),
-                'isNasdaqListed': info.get('isNasdaqListed', ''),
-                'isNasdaq100': info.get('isNasdaq100', ''),
-                'isHeld': info.get('isHeld', ''),
-            }
-            return record
+        try:
+            url = f"{self.BASE_URL}/quote/{ticker}/info?assetclass=stocks"
+            async with httpx.AsyncClient(
+                timeout=httpx.Timeout(10.0, read=20.0),
+                headers=self.HEADERS,
+                follow_redirects=True,
+            ) as client:
+                info = await self.get_json_from_page(client, url)
+                if not info:
+                    return []
+                if not info.get('data'):
+                    print(f'No info por ticker {ticker}')
+                    return []
+                info = info.get('data')
+                record = {
+                    'ticker':ticker,
+                    'companyName': self.clean_str(info.get('companyName', '')),
+                    'stockType':self.clean_str(info.get('stockType', '')),
+                    'exchange':self.clean_str(info.get('exchange', '')),
+                    'assetClass': info.get('assetClass', ''),
+                    'isNasdaqListed': info.get('isNasdaqListed', ''),
+                    'isNasdaq100': info.get('isNasdaq100', ''),
+                    'isHeld': info.get('isHeld', ''),
+                }
+                return record
+        except Exception as e:
+            print(f"<Error> In fet_info: {str(e)}")
+            return []
 
     async def fetch_institutionals(self,ticker: str):
-        url = f"{self.BASE_URL}/company/{ticker}/institutional-holdings?limit=10&type=TOTAL&sortColumn=marketValue"
-        async with httpx.AsyncClient(
-            timeout=httpx.Timeout(10.0, read=20.0),
-            headers=self.HEADERS,
-            follow_redirects=True,
-        ) as client:
-            json_data = await self.get_json_from_page(client, url)
-            if not json_data:
-                return []
-            if not json_data.get('data'):
-                print(f'No institutional data for ticker {ticker}')
-                return []
-            ownershipSummary = json_data.get('data', {}).get('ownershipSummary',{})
-            activePositions = json_data.get('data', {}).get('activePositions',{}).get('rows', {})
-            newSoldOutPositions = json_data.get('data', {}).get('newSoldOutPositions',{}).get('rows', {})
+        try:
+            url = f"{self.BASE_URL}/company/{ticker}/institutional-holdings?limit=10&type=TOTAL&sortColumn=marketValue"
+            async with httpx.AsyncClient(
+                timeout=httpx.Timeout(10.0, read=20.0),
+                headers=self.HEADERS,
+                follow_redirects=True,
+            ) as client:
+                json_data = await self.get_json_from_page(client, url)
+                if not json_data:
+                    return []
+                if not json_data.get('data'):
+                    print(f'No institutional data for ticker {ticker}')
+                    return []
+                ownershipSummary = json_data.get('data', {}).get('ownershipSummary',{})
+                activePositions = json_data.get('data', {}).get('activePositions',{}).get('rows', {})
+                newSoldOutPositions = json_data.get('data', {}).get('newSoldOutPositions',{}).get('rows', {})
 
-            final_list = activePositions + newSoldOutPositions
+                final_list = activePositions + newSoldOutPositions
 
-            for item in final_list:
-                if item.get('positions','') == 'Increased Positions':
-                    IncreasedPositionsHolders=self.clean_number_str(item.get('holders', ''))
-                    IncreasedPositionsShares=self.clean_number_str(item.get('shares', ''))
-                elif item.get('positions') == 'Decreased Positions':
-                    DecreasedPositionsHolders=self.clean_number_str(item.get('holders', ''))
-                    DecreasedPositionsShares=self.clean_number_str(item.get('shares', ''))
-                elif item.get('positions') == 'Held Positions':
-                    HeldPositionsHolders=self.clean_number_str(item.get('holders', ''))
-                    HeldPositionsShares=self.clean_number_str(item.get('shares', ''))
-                elif item.get('positions') == 'Total Institutional Shares':
-                    TotalPositionsHolders=self.clean_number_str(item.get('holders', ''))
-                    TotalPositionsShares=self.clean_number_str(item.get('shares', ''))
-                elif item.get('positions') == 'New Positions':
-                    NewPositionsHolders=self.clean_number_str(item.get('holders', ''))
-                    NewPositionsShares=self.clean_number_str(item.get('shares', ''))
-                elif item.get('positions') == 'Sold Out Positions':
-                    SoldOutPositionsHolders=self.clean_number_str(item.get('holders', ''))
-                    SoldOutPositionsShares=self.clean_number_str(item.get('shares', ''))
-                else:
-                    print('Some error getting instutionanals, poisitions not found')
+                for item in final_list:
+                    if item.get('positions','') == 'Increased Positions':
+                        IncreasedPositionsHolders=self.clean_number_str(item.get('holders', ''))
+                        IncreasedPositionsShares=self.clean_number_str(item.get('shares', ''))
+                    elif item.get('positions') == 'Decreased Positions':
+                        DecreasedPositionsHolders=self.clean_number_str(item.get('holders', ''))
+                        DecreasedPositionsShares=self.clean_number_str(item.get('shares', ''))
+                    elif item.get('positions') == 'Held Positions':
+                        HeldPositionsHolders=self.clean_number_str(item.get('holders', ''))
+                        HeldPositionsShares=self.clean_number_str(item.get('shares', ''))
+                    elif item.get('positions') == 'Total Institutional Shares':
+                        TotalPositionsHolders=self.clean_number_str(item.get('holders', ''))
+                        TotalPositionsShares=self.clean_number_str(item.get('shares', ''))
+                    elif item.get('positions') == 'New Positions':
+                        NewPositionsHolders=self.clean_number_str(item.get('holders', ''))
+                        NewPositionsShares=self.clean_number_str(item.get('shares', ''))
+                    elif item.get('positions') == 'Sold Out Positions':
+                        SoldOutPositionsHolders=self.clean_number_str(item.get('holders', ''))
+                        SoldOutPositionsShares=self.clean_number_str(item.get('shares', ''))
+                    else:
+                        print('Some error getting instutionanals, poisitions not found')
+                        
                     
-                
-            record = {
-                'ticker':ticker,
-                'SharesOutstandingPCT':self.clean_number_str(ownershipSummary.get('SharesOutstandingPCT', {}).get('value', '')),
-                'ShareoutstandingTotal':self.clean_number_str(ownershipSummary.get('ShareoutstandingTotal', {}).get('value', '')),
-                'TotalHoldingsValue':self.clean_number_str(ownershipSummary.get('TotalHoldingsValue', {}).get('value', '')),
-                'IncreasedPositionsHolders':IncreasedPositionsHolders,
-                'IncreasedPositionsShares':IncreasedPositionsShares,
-                'DecreasedPositionsHolders':DecreasedPositionsHolders,
-                'DecreasedPositionsShares':DecreasedPositionsShares,
-                'HeldPositionsHolders':HeldPositionsHolders,
-                'HeldPositionsShares':HeldPositionsShares,
-                'TotalPositionsHolders':TotalPositionsHolders,
-                'TotalPositionsShares':TotalPositionsShares,
-                'NewPositionsHolders':NewPositionsHolders,
-                'NewPositionsShares':NewPositionsShares,
-                'SoldOutPositionsHolders':SoldOutPositionsHolders,
-                'SoldOutPositionsShares':SoldOutPositionsShares,
-                }
-            return record
-        
+                record = {
+                    'ticker':ticker,
+                    'SharesOutstandingPCT':self.clean_number_str(ownershipSummary.get('SharesOutstandingPCT', {}).get('value', '')),
+                    'ShareoutstandingTotal':self.clean_number_str(ownershipSummary.get('ShareoutstandingTotal', {}).get('value', '')),
+                    'TotalHoldingsValue':self.clean_number_str(ownershipSummary.get('TotalHoldingsValue', {}).get('value', '')),
+                    'IncreasedPositionsHolders':IncreasedPositionsHolders,
+                    'IncreasedPositionsShares':IncreasedPositionsShares,
+                    'DecreasedPositionsHolders':DecreasedPositionsHolders,
+                    'DecreasedPositionsShares':DecreasedPositionsShares,
+                    'HeldPositionsHolders':HeldPositionsHolders,
+                    'HeldPositionsShares':HeldPositionsShares,
+                    'TotalPositionsHolders':TotalPositionsHolders,
+                    'TotalPositionsShares':TotalPositionsShares,
+                    'NewPositionsHolders':NewPositionsHolders,
+                    'NewPositionsShares':NewPositionsShares,
+                    'SoldOutPositionsHolders':SoldOutPositionsHolders,
+                    'SoldOutPositionsShares':SoldOutPositionsShares,
+                    }
+                return record
+        except Exception as e:
+            print(f"<Error> In institutionals: {str(e)}")
+            return []
         
     
     async def fetch_multiple_tickers(self, tickers: list):
