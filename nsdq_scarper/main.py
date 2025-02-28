@@ -7,17 +7,14 @@ from scarper import Scarper
 from database import Database
 
 
-
-
-
 async def insert_tickers(db, scraper, batch_size=10):
     """Inserts tickers data"""
-    tickers = pl.scan_csv('nasdaq_screener_1738844749646.csv').select('Symbol').collect()
+    tickers = pl.scan_csv('tickers2.csv').select('Symbol').collect()
 
     tickers = tickers['Symbol'].to_list()
     for chunk in itertools.batched(tickers, batch_size):
         tickers_records = await scraper.fetch_multiple_tickers(chunk)
-        query = """INSERT INTO tickers (ticker, companyName, stockType, exchange, assetClass, isNasdaqListed, isNasdaq100, isHeld) 
+        query = """INSERT INTO tickers (ticker, company_name, stock_type, exchange, asset_class, is_nasdaq_listed, is_nasdaq100, is_held) 
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8) 
             ON CONFLICT (ticker) DO NOTHING"""
         data = [tuple(record.values()) for record in tickers_records if len(record) >0]
@@ -45,7 +42,7 @@ async def insert_old_institutionals(db):
 
     records = [tuple(row)for row in df_filtered.iter_rows()]
     
-    query = """INSERT INTO institutional_holdings (ticker, sharesOutstandingPCT, sharesOutstandingTotal, totalHoldingsValue, increasedPositionsHolders, increasedPositionsShares, decreasedPositionsHolders, decreasedPositionsShares, heldPositionsHolders, heldPositionsShares, totalPositionsHolders, totalPositionsShares, newPositionsHolders, newPositionsShares, soldOutPositionsHolders, soldOutPositionsShares, inserted) 
+    query = """INSERT INTO institutional_holdings (ticker, shares_outstanding_pct, shares_outstanding_total, total_holdings_value, increased_positions_holders, increased_positions_shares, decreased_positions_holders, decreased_positions_shares, held_positions_holders, held_positions_shares, total_positions_holders, total_positions_shares, new_positions_holders, new_positions_shares, sold_out_positions_holders, sold_out_positions_shares, inserted) 
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) 
             """
 
@@ -58,14 +55,14 @@ async def scrape_dividends(db, scraper, batch_size=10):
     tickers = await db.fetch("SELECT ticker FROM tickers;")
     for chunk in itertools.batched(tickers, batch_size):
         dividends = await scraper.fetch_multiple_dividends(chunk)
-        clean_records = [(item['ticker'], item['exOrEffDate'], item['paymentType'], item['amount'],
-                        item['declarationDate'], item['recordDate'], item['paymentDate'], item['currency'])
+        clean_records = [(item['ticker'], item['ex_date'], item['payment_type'], item['amount'],
+                        item['declaration_date'], item['record_date'], item['payment_date'], item['currency'])
                         for sublist in dividends if len(sublist)>0 for item in sublist]
         time.sleep(1)
         await db.executemany(
-            """INSERT INTO dividends (ticker, exOrEffDate, paymentType, amount, declarationDate, recordDate, paymentDate, currency) 
+            """INSERT INTO dividends (ticker, ex_date, payment_type, amount, declaration_date, record_date, payment_date, currency) 
                VALUES ($1,$2,$3,$4,$5,$6,$7,$8) 
-               ON CONFLICT (ticker, exOrEffDate, paymentType, amount, declarationDate, recordDate, paymentDate, currency) DO NOTHING""", 
+               ON CONFLICT (ticker, ex_date, payment_type, amount, declaration_date, record_date, payment_date, currency) DO NOTHING""", 
             clean_records
         )
         counter += len(clean_records)
@@ -86,7 +83,7 @@ async def scrape_institutionals(db, scraper,batch_size=10):
         clean_records = [tuple(record.values()) for record in institutionals_records if len(record)>0]
         time.sleep(1)
         await db.executemany(
-            """INSERT INTO institutional_holdings (ticker, sharesOutstandingPCT, sharesOutstandingTotal, totalHoldingsValue, increasedPositionsHolders, increasedPositionsShares, decreasedPositionsHolders, decreasedPositionsShares, heldPositionsHolders, heldPositionsShares, totalPositionsHolders, totalPositionsShares, newPositionsHolders, newPositionsShares, soldOutPositionsHolders, soldOutPositionsShares) 
+            """INSERT INTO institutional_holdings (ticker, shares_outstanding_pct, shares_outstanding_total, total_holdings_value, increased_positions_holders, increased_positions_shares, decreased_positions_holders, decreased_positions_shares, held_positions_holders, held_positions_shares, total_positions_holders, total_positions_shares, new_positions_holders, new_positions_shares, sold_out_positions_holders, sold_out_positions_shares) 
                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
             """, clean_records    
         )
@@ -104,11 +101,11 @@ async def scrape_metadata(db, scraper, batch_size=10):
         clean_records = [tuple(record.values()) for record in metadata_records if len(record)>0]
         time.sleep(1)
         await db.executemany(
-            """INSERT INTO metadata (ticker, exchange, sector, industry, oneYrTarget, todayHighLow, shareVolume, 
-                                    averageVolume, previousClose, fiftTwoWeekHighLow, marketCap, PERatio, 
-                                    forwardPE1Yr, earningsPerShare, annualizedDividend, exDividendDate, 
-                                    dividendPaymentDate, yield, specialDividendDate, specialDividendAmount, 
-                                    specialDividendPaymentDate) 
+            """INSERT INTO metadata (ticker, exchange, sector, industry, one_yr_target, today_high_low, share_volume, 
+                                    average_volume, previous_close, fiftytwo_week_high_low, market_cap, pe_ratio, 
+                                    forward_pe_1yr, earnings_per_share, annualized_dividend, ex_dividend_date, 
+                                    dividend_payment_date, yield, special_dividend_date, special_dividend_amount, 
+                                    special_dividend_payment_date) 
             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) 
             """, clean_records
         )

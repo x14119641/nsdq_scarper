@@ -20,8 +20,19 @@ class Scarper:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f'Error in get_json_from_page {str(e)}')
             return []
+            # There are no etf in tickers XD
+            
+            # fallback_url = url.replace('=stocks', '=etf')
+            # try:
+            #         print(f'Trying fallback URL: {fallback_url}')
+            #         response = await client.get(fallback_url)
+            #         response.raise_for_status()
+            #         return response.json()
+            # except Exception as fallback_e:
+            #     print(f'Error fetching fallback URL {fallback_url}: {str(fallback_e)}')
+        # return []
+
 
     def clean_str(self, val:str):
         """Cleans string if empty
@@ -102,12 +113,12 @@ class Scarper:
                 try:
                     records.append({
                         'ticker':ticker,
-                        'exOrEffDate':self.clean_date(dividend.get('exOrEffDate', '')),
-                        'paymentType':self.clean_str(dividend.get('type', '')),
+                        'ex_date':self.clean_date(dividend.get('exOrEffDate', '')),
+                        'payment_type':self.clean_str(dividend.get('type', '')),
                         'amount':self.clean_number_str(dividend.get('amount', '')),
-                        'declarationDate':self.clean_date(dividend.get('declarationDate', '')),
-                        'recordDate':self.clean_date(dividend.get('recordDate', '')),
-                        'paymentDate':self.clean_date(dividend.get('paymentDate', '')),
+                        'declaration_date':self.clean_date(dividend.get('declarationDate', '')),
+                        'record_date':self.clean_date(dividend.get('recordDate', '')),
+                        'payment_date':self.clean_date(dividend.get('paymentDate', '')),
                         'currency':self.clean_str(dividend.get('currency', '')),
                     })
                 except Exception as e:
@@ -139,23 +150,23 @@ class Scarper:
                     'exchange':self.clean_str(summary_data.get('Exchange', {}).get('value', '')),
                     'sector':self.clean_str(summary_data.get('Sector', {}).get('value', '')),
                     'industry':self.clean_str(summary_data.get('Industry', {}).get('value', '')),
-                    'oneYrTarget':self.clean_number_str(summary_data.get('OneYrTarget', {}).get('value', '')),
-                    'todayHighLow':self.clean_str(summary_data.get('TodayHighLow', {}).get('value', '')),
-                    'shareVolume':self.clean_number_str(summary_data.get('ShareVolume', {}).get('value', '')),
-                    'averageVolume':self.clean_number_str(summary_data.get('AverageVolume', {}).get('value', '')),
-                    'previousClose':self.clean_number_str(summary_data.get('PreviousClose', {}).get('value', '')),
-                    'fiftTwoWeekHighLow':self.clean_str(summary_data.get('FiftTwoWeekHighLow', {}).get('value', '')),
-                    'marketCap':self.clean_number_str(summary_data.get('MarketCap', {}).get('value', '')),
-                    'PERatio':self.clean_number_str(str(summary_data.get('PERatio', {}).get('value', ''))),
-                    'forwardPE1Yr':self.clean_number_str(summary_data.get('ForwardPE1Yr', {}).get('value', '')),
-                    'earningsPerShare':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
-                    'annualizedDividend':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
-                    'exDividendDate':self.clean_date(summary_data.get('ExDividendDate', {}).get('value', '')),
-                    'dividendPaymentDate':self.clean_date(summary_data.get('DividendPaymentDate', {}).get('value', '')),
+                    'one_yr_target':self.clean_number_str(summary_data.get('OneYrTarget', {}).get('value', '')),
+                    'today_high_low':self.clean_str(summary_data.get('TodayHighLow', {}).get('value', '')),
+                    'share_volume':self.clean_number_str(summary_data.get('ShareVolume', {}).get('value', '')),
+                    'average_volume':self.clean_number_str(summary_data.get('AverageVolume', {}).get('value', '')),
+                    'previous_close':self.clean_number_str(summary_data.get('PreviousClose', {}).get('value', '')),
+                    'fiftytwo_week_high_low':self.clean_str(summary_data.get('FiftTwoWeekHighLow', {}).get('value', '')),
+                    'market_cap':self.clean_number_str(summary_data.get('MarketCap', {}).get('value', '')),
+                    'pe_ratio':self.clean_number_str(str(summary_data.get('PERatio', {}).get('value', ''))),
+                    'forward_pe_1yr':self.clean_number_str(summary_data.get('ForwardPE1Yr', {}).get('value', '')),
+                    'earnings_per_share':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
+                    'annualized_dividend':self.clean_number_str(summary_data.get('AnnualizedDividend', {}).get('value', '')),
+                    'ex_dividend_date':self.clean_date(summary_data.get('ExDividendDate', {}).get('value', '')),
+                    'dividend_payment_date':self.clean_date(summary_data.get('DividendPaymentDate', {}).get('value', '')),
                     'yield':self.clean_number_str(summary_data.get('Yield', {}).get('value', '')),
-                    'specialDividendDate':self.clean_date(summary_data.get('SpecialDividendDate', {}).get('value', '')),
-                    'specialDividendAmount':self.clean_number_str(summary_data.get('SpecialDividendAmount', {}).get('value', '')),
-                    'specialDividendPaymentDate':self.clean_date(summary_data.get('SpecialDividendPaymentDate', {}).get('value', '')),
+                    'special_dividend_date':self.clean_date(summary_data.get('SpecialDividendDate', {}).get('value', '')),
+                    'special_dividend_amount':self.clean_number_str(summary_data.get('SpecialDividendAmount', {}).get('value', '')),
+                    'special_dividend_payment_date':self.clean_date(summary_data.get('SpecialDividendPaymentDate', {}).get('value', '')),
                 }
                 return record
         except Exception as e:
@@ -179,13 +190,13 @@ class Scarper:
                 info = info.get('data')
                 record = {
                     'ticker':ticker,
-                    'companyName': self.clean_str(info.get('companyName', '')),
-                    'stockType':self.clean_str(info.get('stockType', '')),
+                    'company_name': self.clean_str(info.get('companyName', '')),
+                    'stock_type':self.clean_str(info.get('stockType', '')),
                     'exchange':self.clean_str(info.get('exchange', '')),
-                    'assetClass': info.get('assetClass', ''),
-                    'isNasdaqListed': info.get('isNasdaqListed', ''),
-                    'isNasdaq100': info.get('isNasdaq100', ''),
-                    'isHeld': info.get('isHeld', ''),
+                    'asset_class': info.get('assetClass', ''),
+                    'is_nasdaq_listed': info.get('isNasdaqListed', ''),
+                    'is_nasdaq100': info.get('isNasdaq100', ''),
+                    'is_held': info.get('isHeld', ''),
                 }
                 return record
         except Exception as e:
@@ -237,21 +248,21 @@ class Scarper:
                     
                 record = {
                     'ticker':ticker,
-                    'SharesOutstandingPCT':self.clean_number_str(ownershipSummary.get('SharesOutstandingPCT', {}).get('value', '')),
-                    'ShareoutstandingTotal':self.clean_number_str(ownershipSummary.get('ShareoutstandingTotal', {}).get('value', '')),
-                    'TotalHoldingsValue':self.clean_number_str(ownershipSummary.get('TotalHoldingsValue', {}).get('value', '')),
-                    'IncreasedPositionsHolders':IncreasedPositionsHolders,
-                    'IncreasedPositionsShares':IncreasedPositionsShares,
-                    'DecreasedPositionsHolders':DecreasedPositionsHolders,
-                    'DecreasedPositionsShares':DecreasedPositionsShares,
-                    'HeldPositionsHolders':HeldPositionsHolders,
-                    'HeldPositionsShares':HeldPositionsShares,
-                    'TotalPositionsHolders':TotalPositionsHolders,
-                    'TotalPositionsShares':TotalPositionsShares,
-                    'NewPositionsHolders':NewPositionsHolders,
-                    'NewPositionsShares':NewPositionsShares,
-                    'SoldOutPositionsHolders':SoldOutPositionsHolders,
-                    'SoldOutPositionsShares':SoldOutPositionsShares,
+                    'shares_outstanding_pct':self.clean_number_str(ownershipSummary.get('SharesOutstandingPCT', {}).get('value', '')),
+                    'shares_outstanding_total':self.clean_number_str(ownershipSummary.get('ShareoutstandingTotal', {}).get('value', '')),
+                    'total_holdings_value':self.clean_number_str(ownershipSummary.get('TotalHoldingsValue', {}).get('value', '')),
+                    'increased_positions_holders':IncreasedPositionsHolders,
+                    'increased_positions_shares':IncreasedPositionsShares,
+                    'decreased_positions_holders':DecreasedPositionsHolders,
+                    'decreased_positions_shares':DecreasedPositionsShares,
+                    'held_positions_holders':HeldPositionsHolders,
+                    'held_positions_shares':HeldPositionsShares,
+                    'total_positions_holders':TotalPositionsHolders,
+                    'total_positions_shares':TotalPositionsShares,
+                    'new_positions_holders':NewPositionsHolders,
+                    'new_positions_shares':NewPositionsShares,
+                    'sold_out_positions_holders':SoldOutPositionsHolders,
+                    'sold_out_positions_shares':SoldOutPositionsShares,
                     }
                 return record
         except Exception as e:
